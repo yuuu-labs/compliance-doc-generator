@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="業種と事業所の情報を入力すると、カスタマーハラスメント対応マニュアルのひな形を作成できる無料ツール。">
+<title>カスハラ対応マニュアルジェネレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#eef1f2; --panel:#ffffff; --paper:#ffffff; --ink:#1b2629; --muted:#5d6b70; --line:#d5dcde;
+  --accent:#2d4f6c; --accent-ink:#ffffff; --accent-soft:#e3ebf2;
+  --l1:#3f7a5a; --l2:#b7862a; --l3:#c0612b; --l4:#b3261e;
+  --l1s:#e5f1ea; --l2s:#f7eed9; --l3s:#f8e6db; --l4s:#f7dedc;
+  --shadow:0 1px 2px rgba(20,40,50,.06),0 8px 24px rgba(20,40,50,.08);
+  --sans:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --serif:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#12181b;--panel:#1a2226;--paper:#1e272b;--ink:#e3e9eb;--muted:#9aa8ad;--line:#33424a;
+  --accent:#8fb4d6;--accent-ink:#10202c;--accent-soft:#223443;
+  --l1:#7cc59b;--l2:#e2b85b;--l3:#ec9a6a;--l4:#f08a82;--l1s:#1f3329;--l2s:#35301f;--l3s:#3a2a20;--l4s:#3c2323;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#12181b;--panel:#1a2226;--paper:#1e272b;--ink:#e3e9eb;--muted:#9aa8ad;--line:#33424a;
+  --accent:#8fb4d6;--accent-ink:#10202c;--accent-soft:#223443;
+  --l1:#7cc59b;--l2:#e2b85b;--l3:#ec9a6a;--l4:#f08a82;--l1s:#1f3329;--l2s:#35301f;--l3s:#3a2a20;--l4s:#3c2323;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.7;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+header.top h1{font-family:var(--serif);font-size:26px;margin:0;letter-spacing:.02em;text-wrap:balance}
+header.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:700;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:18px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:900px){form{position:static;max-height:none}}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+legend{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin-bottom:6px;padding:0}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],input[type=number],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer;background:var(--bg)}
+.chk:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.chk input{accent-color:var(--accent);margin:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.out{display:flex;flex-direction:column;gap:12px;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.bar .btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:700;border-radius:6px;padding:8px 16px;cursor:pointer;border:1px solid var(--accent)}
+.primary{background:var(--accent);color:var(--accent-ink)}
+.ghost{background:transparent;color:var(--accent)}
+.status{font-size:12px;color:var(--muted);min-height:1.4em}
+.gdoc{background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:13px}
+.gdoc p{margin:0 0 6px}.gdoc ol{margin:0 0 6px;padding-left:1.4em}
+.gdoc a{color:var(--accent);font-weight:700}
+.toc{display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
+.toc a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--line)}
+.toc a:hover{color:var(--accent)}
+.paper{background:var(--paper);box-shadow:var(--shadow);border-radius:4px;padding:48px clamp(18px,5vw,64px);min-width:0}
+.doc{max-width:720px;margin:0 auto}
+.doc .dtitle{font-family:var(--serif);font-size:28px;text-align:center;margin:0 0 4px;letter-spacing:.06em}
+.doc .dsub{text-align:center;color:var(--muted);margin:0 0 4px}
+.doc .dmeta{text-align:center;font-size:12px;color:var(--muted);margin:0 0 32px}
+.doc h2{font-family:var(--serif);font-size:19px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink);text-wrap:balance}
+.doc h3{font-size:15px;margin:22px 0 6px}
+.doc p{margin:0 0 10px}
+.doc ul,.doc ol{margin:0 0 12px;padding-left:1.4em}
+.doc li{margin-bottom:3px}
+.tbl{overflow-x:auto;margin:0 0 14px}
+.doc table{border-collapse:collapse;width:100%;font-size:13px;min-width:460px}
+.doc th,.doc td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.doc th{background:var(--accent-soft);font-weight:700;white-space:nowrap}
+.box{border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:0 0 14px;background:var(--bg)}
+.box .bl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);margin-bottom:4px}
+.box p:last-child{margin:0}
+.lv td:first-child{font-weight:700;white-space:nowrap}
+.lv tr.l1 td:first-child{color:var(--l1);background:var(--l1s)}
+.lv tr.l2 td:first-child{color:var(--l2);background:var(--l2s)}
+.lv tr.l3 td:first-child{color:var(--l3);background:var(--l3s)}
+.lv tr.l4 td:first-child{color:var(--l4);background:var(--l4s)}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:0 7px;border-radius:3px;margin-right:6px;vertical-align:1px}
+.tag.l2{background:var(--l2s);color:var(--l2)}.tag.l3{background:var(--l3s);color:var(--l3)}.tag.l4{background:var(--l4s);color:var(--l4)}
+.note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:32px}
+@media (prefers-reduced-motion:no-preference){.chk{transition:background .15s,border-color .15s}}
+</style>
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <span class="badge">業種別 ・ 2026年10月1日施行対応</span>
+      <h1>カスハラ対応マニュアルジェネレーター</h1>
+      <p>業種を選び、事業所の情報を入力すると、右側のマニュアルがその場で書き換わります。できあがったらWordで保存できます。はじめは記入例が入っています。</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form id="f" autocomplete="off">
+      <fieldset>
+        <legend>1. 業種と基本情報</legend>
+        <label class="f">業種
+          <select id="industry">
+            <option value="food" selected>飲食店</option>
+            <option value="retail">小売店・スーパー</option>
+            <option value="medical">医療機関(クリニック・病院)</option>
+            <option value="care">介護・福祉</option>
+            <option value="hotel">宿泊施設</option>
+            <option value="salon">美容・理容・サロン</option>
+            <option value="general">その他の業種(汎用)</option>
+          </select>
+        </label>
+        <label class="f"><span id="shopLabel">店舗名</span><input type="text" id="shop" value="居酒屋 さくら 駅前店"></label>
+        <label class="f">会社名(法人名・事業者名)<input type="text" id="company" value="株式会社さくらフーズ"></label>
+        <label class="f">従業員数(パート・アルバイト含む)
+          <select id="size">
+            <option value="s">10人以下</option>
+            <option value="m" selected>11〜30人</option>
+            <option value="l">31人以上</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. 業務の特徴</legend>
+        <div class="checks" id="feats"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. 体制と連絡先</legend>
+        <div class="row2">
+          <label class="f">現場責任者<input type="text" id="manager" value="店長"></label>
+          <label class="f">不在時の代行<input type="text" id="deputy" value="副店長・時間帯責任者"></label>
+        </div>
+        <label class="f">従業員の相談窓口<input type="text" id="desk" value="本部 総務担当(佐藤)"></label>
+        <label class="f">外部の相談先
+          <select id="external">
+            <option value="sr" selected>顧問の社会保険労務士</option>
+            <option value="lawyer">顧問弁護士</option>
+            <option value="both">社会保険労務士・弁護士の両方</option>
+            <option value="none">未定</option>
+          </select>
+        </label>
+        <label class="f">最寄りの警察署<input type="text" id="police" value="○○警察署(電話 000-000-0000)"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>4. 対応ルール</legend>
+        <div class="row2">
+          <label class="f">対面対応の上限(分)<input type="number" id="limitF" min="5" max="120" step="5" value="30"></label>
+          <label class="f">電話対応の上限(分)<input type="number" id="limitP" min="5" max="120" step="5" value="20"></label>
+        </div>
+        <label class="f">運用開始日<input type="text" id="start" value="2026年10月1日"></label>
+        <p class="hint">上限時間は目安です。超えたら責任者の判断で対応を終えられるようにしておくと、現場が迷わずに済みます。</p>
+      </fieldset>
+    </form>
+
+    <section class="out">
+      <div class="bar">
+        <nav class="toc" id="toc"></nav>
+        <div class="btns">
+          <button type="button" class="ghost" id="copyBtn">テキストをコピー</button>
+          <button type="button" class="ghost" id="gdocBtn">Googleドキュメント用にコピー</button>
+          <button type="button" class="primary" id="docxBtn" hidden>Wordで保存</button>
+        </div>
+      </div>
+      <div class="status" id="status" role="status"></div>
+      <div class="gdoc" id="gdocHelp" hidden>
+        <p><strong>書式つきでコピーしました。</strong>次の手順でGoogleドキュメントに貼り付けてください。</p>
+        <ol>
+          <li><a href="https://docs.new" target="_blank" rel="noopener">新しいGoogleドキュメントを開く</a>(Googleにログインした状態で開きます)</li>
+          <li>開いた文書で貼り付けます(Windowsは Ctrl+V、Macは ⌘+V)。見出し・表・枠がそのまま入ります。</li>
+        </ol>
+        <p class="hint">Wordで保存したファイルをGoogleドライブにアップロードして開く方法もあります。</p>
+      </div>
+      <article class="paper"><div class="doc" id="doc"></div></article>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const FEAT_KEYS = ["alcohol","night","phone","review","delivery","ec","visit","camera"];
+const FIELDS = ["industry","shop","company","size",...FEAT_KEYS,"manager","deputy","desk","external","police","limitF","limitP","start"];
+const EXT_LABEL = {sr:"顧問の社会保険労務士",lawyer:"顧問弁護士",both:"顧問の社会保険労務士・弁護士",none:""};
+const FEAT_LABEL = {alcohol:"お酒を出す",night:"夜間・深夜の営業",phone:"電話予約・問い合わせ",review:"口コミサイト・SNS",delivery:"デリバリー・テイクアウト",ec:"通信販売・EC",visit:"訪問サービスあり",camera:"防犯カメラあり"};
+
+/* ---------- 業種ごとの設定 ---------- */
+const IND = {
+  food:{label:"飲食店",shopLabel:"店舗名",biz:"店舗",cust:"お客様",place:"店内",staff:"従業員",
+    shop:"居酒屋 さくら 駅前店",company:"株式会社さくらフーズ",mgr:"店長",dep:"副店長・時間帯責任者",
+    feats:{alcohol:1,night:1,phone:1,review:1,delivery:0,camera:1},night:"22時以降も営業",
+    examples:[
+      ["要求が不当","料理に問題がないのに全額返金や無料提供を求める/一口食べただけで作り直しと返金の両方を求める/店のミスに対して過大な慰謝料を求める"],
+      ["態度・手段が不当","大声で怒鳴る、テーブルを叩く、物を投げる/土下座や謝罪文を求める/長時間居座り、同じ話を繰り返す/従業員の名前を聞き出して「覚えておけ」と脅す"],
+      ["従業員個人への行為","容姿や人格を侮辱する/身体に触る、連絡先をしつこく聞く/従業員を無断で撮影し、SNSに載せると言う"]],
+    scenes:["long","abuse","dogeza","refund_food","foreign","sexual","photo"]},
+  retail:{label:"小売店・スーパー",shopLabel:"店舗名",biz:"店舗",cust:"お客様",place:"店内",staff:"従業員",
+    shop:"みどりマート 本町店",company:"株式会社みどり商事",mgr:"店長",dep:"副店長・売場責任者",
+    feats:{night:0,phone:1,review:1,ec:0,camera:1},night:"22時以降も営業",
+    examples:[
+      ["要求が不当","使用済みや購入から長期間たった商品の返品・返金を強く求める/値引きやポイントの上乗せを強要する/店の落ち度がないのに商品の配達や取り置きを求める"],
+      ["態度・手段が不当","レジで大声を出す、カウンターを叩く/土下座や謝罪文を求める/長時間売場に居座り、同じ話を繰り返す"],
+      ["従業員個人への行為","名札の名前を控えて「ネットに書く」と脅す/容姿や人格を侮辱する/退勤を待ち伏せする、しつこく話しかける"]],
+    scenes:["long","abuse","dogeza","refund_retail","discount","sexual","photo"]},
+  medical:{label:"医療機関",shopLabel:"医療機関名",biz:"医療機関",cust:"患者さん・ご家族",place:"院内",staff:"職員",
+    shop:"さくら内科クリニック",company:"医療法人さくら会",mgr:"院長・事務長",dep:"受付リーダー・看護師長",
+    feats:{night:0,phone:1,review:1,camera:1},night:"夜間・休日の診療あり",
+    examples:[
+      ["要求が不当","医学的に必要のない薬や検査を強く求める/診断書の内容の書き換えを求める/順番を無視して先に診るよう求める"],
+      ["態度・手段が不当","待ち時間を理由に受付で怒鳴る/長時間の電話や、同じ内容の電話を繰り返す/「訴える」「ネットに書く」と繰り返し脅す"],
+      ["職員個人への行為","看護師や受付スタッフへの性的な発言・身体接触/職員の個人の連絡先を聞き出そうとする/職員を無断で撮影する"]],
+    scenes:["wait","medreq","long","abuse","dogeza","sexual","photo"],
+    note8:"医療機関には、医師法の応招義務があります。厚生労働省の通知(令和元年12月25日)は、緊急の対応が必要な場合を除き、患者さんの迷惑行為などで信頼関係が損なわれている場合には、診療をお断りしても正当とされる場合があるとしています。お断りの判断は院長が行い、迷う場合は弁護士に相談します。"},
+  care:{label:"介護・福祉",shopLabel:"事業所名",biz:"事業所",cust:"利用者・ご家族",place:"施設内",staff:"職員",
+    shop:"さくらデイサービスセンター",company:"社会福祉法人さくら会",mgr:"施設長・管理者",dep:"生活相談員・サービス提供責任者",
+    feats:{night:1,phone:1,visit:1,camera:0},night:"夜勤・宿直あり",
+    examples:[
+      ["要求が不当","契約にないサービス(家族の分の家事など)を求める/特定の職員だけを担当にするよう強要する/職員の落ち度がないのに謝罪や補償を求める"],
+      ["態度・手段が不当","ご家族からの長時間の電話や面談の要求を繰り返す/職員に怒鳴る、威圧する/土下座や謝罪文を求める"],
+      ["職員個人への行為","身体に触る、性的な発言をする/職員の個人の連絡先やSNSを聞き出す/職員を無断で撮影する"]],
+    scenes:["family","contract","long","abuse","dogeza","sexual_care","photo"],
+    note3:"認知症などの病気や障害の症状による言動は、カスハラとして一律に扱うのではなく、ケアの方法やチームでの関わり方として検討します。ただし、その場合も職員の安全を守ることを優先し、一人で抱え込ませません。"},
+  hotel:{label:"宿泊施設",shopLabel:"施設名",biz:"施設",cust:"お客様",place:"館内",staff:"従業員",
+    shop:"ホテルさくら",company:"株式会社さくらホテルズ",mgr:"支配人",dep:"フロント責任者・ナイトマネージャー",
+    feats:{alcohol:1,night:1,phone:1,review:1,camera:1},night:"24時間フロント・夜間勤務あり",
+    examples:[
+      ["要求が不当","理由のない無料アップグレードや宿泊費の返金を求める/予約内容を大きく超えるサービスを求める/施設の落ち度がないのに補償を求める"],
+      ["態度・手段が不当","フロントで大声を出す、威圧する/深夜に繰り返し呼び出す/土下座や謝罪文を求める"],
+      ["従業員個人への行為","従業員を客室に呼びつける/性的な発言や身体接触/従業員を無断で撮影する"]],
+    scenes:["room","upgrade","long","abuse","dogeza","sexual","photo"]},
+  salon:{label:"美容・理容・サロン",shopLabel:"サロン名",biz:"サロン",cust:"お客様",place:"店内",staff:"スタッフ",
+    shop:"ヘアサロン さくら",company:"さくら美容室",mgr:"店長・オーナー",dep:"チーフスタッフ",
+    feats:{night:0,phone:1,review:1,camera:0},night:"夜間の営業",
+    examples:[
+      ["要求が不当","仕上がりに問題がないのに、全額返金や無料のやり直しを繰り返し求める/予約時間を大きく過ぎての施術を求める"],
+      ["態度・手段が不当","施術中の暴言、長時間の居座り/土下座や謝罪文を求める/「悪い口コミを書く」と脅す"],
+      ["スタッフ個人への行為","施術中の身体接触や性的な発言/指名スタッフへのつきまとい、私的な連絡の強要/スタッフを無断で撮影する"]],
+    scenes:["redo","long","abuse","dogeza","sexual","photo"]},
+  general:{label:"その他の業種",shopLabel:"事業所名",biz:"事業所",cust:"お客様",place:"事業所内",staff:"従業員",
+    shop:"○○支店",company:"株式会社○○",mgr:"責任者",dep:"副責任者",
+    feats:{phone:1,review:1,camera:0},night:"夜間・深夜の営業",
+    examples:[
+      ["要求が不当","理由のない返金や無償対応を求める/契約内容を大きく超えるサービスを求める/不当な損害賠償を求める"],
+      ["態度・手段が不当","大声で怒鳴る、威圧する/長時間居座り、同じ話を繰り返す/土下座や謝罪文を求める"],
+      ["従業員個人への行為","容姿や人格を侮辱する/性的な発言や身体接触、つきまとい/従業員を無断で撮影し、SNSに載せると言う"]],
+    scenes:["long","abuse","dogeza","refund_generic","sexual","photo"]}
+};
+const FEAT_SCENE = {alcohol:"drunk",phone:"phone",review:"review",delivery:"delivery",ec:"ec",visit:"visit"};
+
+/* ---------- 場面別の対応 ---------- */
+const SCENES = {
+  long:(s,v)=>({lv:"l3",t:"長時間の居座り・同じ要求の繰り返し",d:[`対面${s.limitF}分を目安に、責任者が「これ以上のご対応はいたしかねます」と伝える。`,"同じ回答を繰り返す。新しい条件は出さない。","それでも帰らない場合は退去をお願いし、応じなければレベル4として扱う。"],talk:"「ご意見は承りました。当方としてのお答えは先ほどお伝えしたとおりです。これ以上はご対応いたしかねますので、本日はお引き取りください」"}),
+  abuse:(s,v)=>({lv:"l3",t:"大声・暴言・威嚇",d:[`ほかの${v.cust}から離れた場所へご案内する(ただし、${v.staff}が閉じ込められる個室は避ける)。`,"2人以上で対応し、責任者に交代する。","暴言が続く場合は対応を打ち切り、退去をお願いする。"],talk:"「大きな声を出されると、お話を伺うことができません。落ち着いてお話しいただけない場合は、ご対応をお断りします」"}),
+  dogeza:(s,v)=>({lv:"l3",t:"土下座・謝罪文・個人名の要求",d:["土下座や謝罪文の作成には応じない。",`${v.staff}のフルネームや連絡先はお伝えしない。${v.biz}としての窓口(責任者名・代表電話)をお伝えする。`],talk:`「土下座や書面でのお詫びには応じておりません。${v.biz}としてのお詫びは、責任者の私から申し上げます」`}),
+  refund_food:(s,v)=>({lv:"l2",t:"過度な返金・無料提供・慰謝料の要求",d:["店に明らかなミスがある場合の対応基準(作り直し、該当品の返金など)を事前に決めておき、その範囲で対応する。","基準を超える要求は、その場で判断せず「本部で確認して回答します」とする。","金銭の要求が続く場合は、外部の相談先に相談する。"],talk:"「店のミスについては○○で対応させていただきます。それ以上のご要望には、当店ではお応えできません」"}),
+  foreign:(s,v)=>({lv:"l2",t:"異物混入などを理由とした要求",d:["まず体調を確認し、必要なら受診をすすめる。","現物は捨てずに保管し、写真を撮る。厨房で工程を確認する。","事実確認の前に補償額を約束しない。調査結果は後日、責任者から連絡する。"],talk:"「大変申し訳ございません。すぐに確認いたします。現物をお預かりしてもよろしいでしょうか」"}),
+  refund_retail:(s,v)=>({lv:"l2",t:"返品・交換・返金の過度な要求",d:["返品・交換の条件(期間、未使用かどうか、レシートの有無)を店頭に掲示し、その基準で対応する。","基準外の要求は、その場で判断せず責任者に引き継ぐ。","商品に不良がある場合は、状態を確認して写真を残す。"],talk:"「申し訳ございませんが、当店の返品の条件は○○となっております。こちらの商品はお受けできません」"}),
+  discount:(s,v)=>({lv:"l2",t:"値引き・特別扱いの強要",d:["値引きやポイントの付与は、定められたルール以外では行わない。","「ほかの店ではやってくれた」「常連だから」などの理由でも、個別の判断はしない。"],talk:"「価格やポイントはルールに沿ってご案内しております。個別の値引きはいたしかねます」"}),
+  refund_generic:(s,v)=>({lv:"l2",t:"過度な返金・無償対応・金銭の要求",d:["自社に落ち度がある場合の対応基準を事前に決めておき、その範囲で対応する。","基準を超える要求は、その場で判断せず「確認して回答します」とする。","金銭の要求が続く場合は、外部の相談先に相談する。"],talk:"「当方の不備については○○で対応いたします。それ以上のご要望にはお応えできません」"}),
+  sexual:(s,v)=>({lv:"l3",t:`${v.staff}へのセクハラ的な言動・つきまとい`,d:["身体に触る、連絡先をしつこく聞く、帰りを待ち伏せるなどは、すぐに担当を外して責任者が対応する。","待ち伏せのおそれがある場合は、退勤時に複数人で帰る、送る、警察に相談するなどの対策をとる。"],talk:`「${v.staff}への個人的なお声がけはご遠慮ください。続く場合はご利用をお断りします」`}),
+  sexual_care:(s,v)=>({lv:"l3",t:"利用者からの暴力・セクハラ",d:["身体に触る、性的な発言、たたく・つねるなどがあれば、その職員を担当から外し、管理者に報告する。","病気や障害の影響が考えられる場合は、ケアの方法や担当体制をチームで見直す。","暴力が続く場合は、ご家族やケアマネジャーと話し合い、契約の見直しも検討する。"],talk:"「そのようなことをされると、ケアを続けることができません。やめてください」"}),
+  photo:(s,v)=>({lv:"l3",t:"無断撮影・SNSでの晒し",d:[`${v.staff}の撮影はやめるよう求め、撮影した画像の削除をお願いする。`,"投稿された場合は、URLと画面を保存し、相談窓口に報告する。削除請求などは外部の相談先と進める。"],talk:`「${v.staff}の撮影はご遠慮いただいております。撮影された画像は削除をお願いします」`}),
+  wait:(s,v)=>({lv:"l2",t:"待ち時間への不満からの暴言",d:["待ち時間の目安をこまめに伝え、不満が大きくなる前に声をかける。","受付で大声を出す場合は、ほかの患者さんから離れた場所で責任者が対応する。","診療の順番は、医学的な緊急性以外の理由では変えない。"],talk:"「お待たせして申し訳ございません。順番にご案内しております。あと○人ほどでお呼びできる見込みです」"}),
+  medreq:(s,v)=>({lv:"l2",t:"医学的に必要のない処方・検査・診断書の要求",d:["処方や検査、診断書の内容は、医師が医学的に判断する。受付や看護師はその場で約束しない。","強い要求が続く場合は、医師から説明し、それでも収まらなければ院長が対応する。"],talk:"「お薬や検査は、医師が診察のうえで判断いたします。ご希望はお伝えしますが、必ずご希望どおりになるとは限りません」"}),
+  family:(s,v)=>({lv:"l2",t:"ご家族からの長時間・繰り返しの要求",d:[`電話は${s.limitP}分、面談は${s.limitF}分を目安とし、窓口を管理者に一本化する。`,"話し合った内容と決まったことは記録し、ご家族にも書面でお伝えする。","同じ要求が繰り返される場合は、ケアマネジャーとも共有して対応する。"],talk:"「ご要望は承りました。事業所としての回答は、管理者から改めてお伝えします」"}),
+  contract:(s,v)=>({lv:"l2",t:"契約にないサービスの要求",d:["契約書や介護計画にないサービスは、その場で引き受けない。","必要性がある場合は、ケアマネジャーと相談して計画の見直しを提案する。"],talk:"「そのサービスは、ご契約の内容に含まれていないため、お受けできません。必要であれば、ケアマネジャーさんと相談させてください」"}),
+  room:(s,v)=>({lv:"l3",t:"客室への呼びつけ",d:["客室の対応は原則として2人で行い、1人で客室に入らない。","入室する場合はドアを開けたままにし、行き先と時刻をフロントに伝える。","不審な呼び出しが繰り返される場合は、電話での対応に切り替える。"],talk:"「係の者2名でお伺いします。ご用件はお電話でも承ります」"}),
+  upgrade:(s,v)=>({lv:"l2",t:"無料アップグレード・返金の強要",d:["施設の不備がある場合の対応基準(部屋の変更、料金の一部返金など)を決めておき、その範囲で対応する。","基準を超える要求は支配人が判断し、その場では約束しない。"],talk:"「ご不便をおかけした点については○○で対応いたします。それ以上のご要望にはお応えできません」"}),
+  redo:(s,v)=>({lv:"l2",t:"仕上がりへの過度なやり直し・返金の要求",d:["お直しの期間と回数の基準(例:施術後○日以内、1回まで)を決めて掲示し、その範囲で対応する。","仕上がりの写真を施術後に撮らせてもらい、記録しておく。","基準を超える要求は店長が判断する。"],talk:"「お直しは施術から○日以内、1回まで承っております。それ以上のご対応はいたしかねます」"}),
+  drunk:(s,v)=>({lv:"l3",t:`酔った${v.cust}の絡み・迷惑行為`,d:["泥酔している方にはお酒の提供を止める。",`${v.staff}への絡みや、ほかの${v.cust}への迷惑が続く場合は、退去をお願いする。`,"暴力や器物損壊があれば、ためらわず110番通報する。"],talk:"「本日はこれ以上のお酒のご提供はできません」"}),
+  phone:(s,v)=>({lv:"l2",t:"電話での長時間・繰り返しのクレーム",d:[`電話${s.limitP}分を目安に打ち切る。同じ内容の電話が続く場合は、責任者に対応を一本化する。`,"最初に日時・相手の名前・内容をメモし、記録を残す。","業務に支障が出る長電話は、「改めて責任者からご連絡します」として一度切る。"],talk:"「これ以上お電話でのご対応はいたしかねます。失礼いたします」(告げてから切ってよい)"}),
+  review:(s,v)=>({lv:"l2",t:"口コミ・SNSをほのめかした要求",d:["「悪い口コミを書く」と言われても、要求の内容で判断し、特別扱いはしない。",`事実と異なる投稿や、${v.staff}個人への中傷は、画面を保存して相談窓口へ報告する。返信や削除依頼は${v.biz}として行い、${v.staff}個人は反応しない。`],talk:"「ご意見として承ります。ただ、口コミの内容によって対応を変えることはできません」"}),
+  delivery:(s,v)=>({lv:"l2",t:"デリバリー・テイクアウトでの不当な要求",d:["商品の不備は、写真などで状況を確認してから対応する。","配達プラットフォームを利用している場合は、その窓口の手順に沿って対応する。","受け渡し時に暴言があった場合も、店内と同じ基準で対応する。"],talk:"「状況を確認させてください。お手数ですが、商品の写真をお送りいただけますか」"}),
+  ec:(s,v)=>({lv:"l2",t:"メール・問い合わせフォームでの繰り返しの要求",d:["回答は責任者が確認したうえで、決まった窓口から送る。担当者個人の名前やアドレスは使わない。","同じ要求が繰り返される場合は、「これ以上の回答は控えます」と伝えて対応を終える。"],talk:"「本件につきましては、先日ご回答した内容から変更はございません。これ以上のご回答は控えさせていただきます」"}),
+  visit:(s,v)=>({lv:"l3",t:"訪問先での暴言・暴力・ハラスメント",d:["訪問先で身の危険を感じたら、ケアを中断してその場を離れてよい。離れた後すぐに事業所へ連絡する。","リスクのある訪問先は、2人で訪問する、事前に情報を共有するなどの対策をとる。","訪問の予定と帰着の時刻を事業所に伝える。"],talk:"「本日はこれ以上ケアを続けることができません。事業所に戻って相談します」"})
+};
+
+function read(){
+  const s={};
+  FIELDS.forEach(k=>{const el=$(k); if(!el){s[k]=false;return;} s[k]= el.type==="checkbox"? el.checked : el.value.trim();});
+  const v=IND[s.industry]||IND.food;
+  s.shop ||= v.shop; s.company ||= s.shop; s.manager ||= v.mgr; s.deputy ||= v.dep;
+  s.desk ||= s.manager; s.police ||= "最寄りの警察署";
+  s.limitF = Math.max(5, parseInt(s.limitF)||30); s.limitP = Math.max(5, parseInt(s.limitP)||20);
+  s.start ||= "2026年10月1日";
+  return s;
+}
+
+/* ---------- マニュアル本体(ブロックの配列) ---------- */
+function build(s){
+  const v=IND[s.industry]||IND.food;
+  const B=[]; const h=t=>B.push({t:"h2",text:t}); const h3=t=>B.push({t:"h3",text:t});
+  const p=t=>B.push({t:"p",text:t}); const ul=a=>B.push({t:"ul",items:a}); const ol=a=>B.push({t:"ol",items:a});
+  const box=(label,text)=>B.push({t:"box",label,text}); const tbl=(head,rows,cls)=>B.push({t:"table",head,rows,cls});
+  const ext = EXT_LABEL[s.external];
+  const small = s.size==="s";
+  const st=v.staff;
+
+  B.push({t:"title",text:"カスタマーハラスメント対応マニュアル"});
+  B.push({t:"sub",text:`${s.company} ${s.shop!==s.company?s.shop:""}`.trim()});
+  B.push({t:"meta",text:`制定 ${s.start} / 業種:${v.label}`});
+
+  h("1. このマニュアルの目的");
+  p(`このマニュアルは、${v.cust}からの著しい迷惑行為(カスタマーハラスメント、以下「カスハラ」)から${st}を守り、安心して働ける職場をつくるためのものです。${s.shop}で働くすべての人(正職員・パート・アルバイト・派遣スタッフ)が対象です。`);
+  p("2026年10月1日から、改正労働施策総合推進法により、事業主にはカスハラへの対策(方針の明確化と周知、相談体制の整備、発生時の迅速で適切な対応など)が義務づけられます。このマニュアルはその中心となる文書です。");
+
+  h("2. 基本方針");
+  p(`${s.company}は、${v.cust}のご意見・ご要望を大切にし、誠実にお応えします。そのうえで、${st}の人格や尊厳を傷つける言動、社会通念上許される範囲を超えた要求に対しては、組織として毅然と対応し、${st}を守ります。`);
+  ul([`カスハラにあたる行為には、${st}個人ではなく${v.biz}・法人として対応します。`,
+      `${st}が一人で抱え込まないよう、相談しやすい体制を整えます。`,
+      "悪質な場合は、対応をお断りし、警察や弁護士など外部の力を借ります。",
+      `カスハラを相談・報告したことを理由に、${st}を不利益に扱うことはありません。`]);
+  box("掲示・ウェブサイト用の文例",`${v.cust}の皆さまへ\n私たちは、皆さまに安心してご利用いただけるよう努めております。一方で、${st}への暴言・威圧的な言動、長時間の拘束、過度な要求などの迷惑行為があった場合は、対応をお断りすることがあります。悪質な場合は警察に通報いたします。${s.camera?`\n防犯のため、${v.place}は防犯カメラで録画しております。`:""}\nご理解とご協力をお願いいたします。\n${s.company}`);
+
+  h("3. カスハラとは(判断のめやす)");
+  p("法律では、次の3つをすべて満たすものをカスハラとしています。");
+  ol(["顧客等(お客様、患者さん、利用者、取引先など)の言動であること",
+      "社会通念上許される範囲を超えていること(要求の内容が不当、または要求の内容は妥当でも手段・態度が不相当)",
+      `その言動によって、${st}の就業環境が害されること`]);
+  p("正当なクレームは大切なご意見です。サービスへの不満や指摘そのものはカスハラではありません。問題になるのは、要求の中身か、伝え方・態度が度を越している場合です。");
+  if(v.note3) p(v.note3);
+  h3(`${v.label}でよくある例`);
+  tbl(["区分","具体例"],v.examples);
+
+  h("4. 対応レベル");
+  p("迷ったときは、次の4段階で判断します。レベル2以上は必ず一人で抱えず、責任者に引き継ぎます。");
+  tbl(["レベル","状態","対応"],[
+    ["レベル1 通常のご意見","内容に一理あり、口調も通常の範囲","お話を伺い、事実を確認して誠実に対応する"],
+    ["レベル2 カスハラの疑い","要求が過大、または口調が強い・話が長引いている",`${s.manager}(不在時は${s.deputy})に連絡し、2人以上で対応する。記録を始める`],
+    ["レベル3 カスハラ",`暴言・威嚇、土下座の要求、対面${s.limitF}分/電話${s.limitP}分を超える拘束など`,"責任者が対応の打ち切りを伝え、退去をお願いする"],
+    ["レベル4 危険","暴力、器物損壊、刃物、帰らない、脅迫",`${st}の安全を最優先し、ためらわず110番通報する`]],"lv");
+
+  h("5. 社内体制と役割");
+  const roles=[
+    [`現場の${st}`,"最初の対応。レベル2以上と感じたら、すぐに責任者を呼ぶ"],
+    [`${s.manager}(不在時:${s.deputy})`,"現場の判断と対応の引き継ぎ、打ち切り・退去要請・通報の判断、記録の確認"],
+    [`相談窓口:${s.desk}`,`${st}からの相談の受付、被害を受けた${st}のフォロー、再発防止策の検討`]];
+  if(ext) roles.push([`外部の相談先:${ext}`,"法的対応が必要な場合、判断に迷う場合の相談"]);
+  roles.push([`警察:${s.police}`,"レベル4の緊急時は110番。悪質な事案の事後相談"]);
+  tbl(["担当","役割"],roles);
+  if(small) p("少人数の職場では、責任者と相談窓口が同じ人になることがあります。その場合は、責任者自身が被害を受けたときの相談先として、外部の相談先や本部をあらかじめ決めておきます。");
+  if(s.night) p(`${v.night}の時間帯など${st}が少ないときは、一人で対応しないことを徹底します。責任者がいない時間帯は、電話で${s.manager}に連絡できるようにしておきます。`);
+
+  h("6. 初期対応の基本");
+  ol(["まず、ご不便をおかけした点について限定的にお詫びする(「ご不快な思いをさせてしまい申し訳ございません」)。非を全面的に認める言い方や、その場での約束はしない。",
+      "お話をさえぎらずに聞き、何があったのか、何を求めているのかを確認する。",
+      "事実を確認する(記録、関係者への確認、カメラ映像など)。",
+      "対応できることとできないことを、はっきりお伝えする。",
+      "レベル2以上だと感じたら、「責任者に代わります」と伝えて交代する。一人で結論を出さない。",
+      "終わったら、その日のうちに記録を残す(付録1)。"]);
+  box("使ってよいひとこと","「確認いたしますので、少々お待ちください」\n「その点については、私の一存ではお答えできません。責任者に代わります」\n「私どもとしてできる対応は○○までとなります」");
+
+  h("7. 場面別の対応");
+  const ids=[...v.scenes];
+  Object.keys(FEAT_SCENE).forEach(k=>{ if(s[k] && isAvail(s.industry,k)) ids.push(FEAT_SCENE[k]); });
+  const lvName={l2:"レベル2〜",l3:"レベル3",l4:"レベル4"};
+  ids.forEach(id=>{const sc=SCENES[id](s,v); B.push({t:"scene",lv:sc.lv,lvName:lvName[sc.lv],text:sc.t}); ul(sc.d); box("言い方の例",sc.talk);});
+
+  h("8. 対応の打ち切り・退去要請・通報");
+  ul([`打ち切り・退去要請の判断は${s.manager}(不在時は${s.deputy})が行う。判断に迷うときは、${st}の安全を優先して打ち切ってよい。`,
+      `退去をお願いする際は、2人以上で、ほかの${v.cust}から離れた場所で伝える。`,
+      "退去をお願いしても応じない、暴力や脅しがある、刃物などを持っている、といった場合はすぐに110番通報する。",
+      `緊急時以外の相談は ${s.police} へ。`,
+      "悪質な場合は、今後のご利用をお断りすることがある。その判断は責任者と法人で行う。"]);
+  if(v.note8) p(v.note8);
+
+  h("9. 記録と報告");
+  p(`カスハラ(レベル2以上)があった場合は、その日のうちに対応記録シート(付録1)を作成し、${s.manager}と${s.desk}に報告します。記録は、再発防止や、必要な場合の法的対応に役立ちます。`);
+  const rec=[`日時、場所、対応した${st}`,`相手の特徴(わかる範囲で)`,"何を言われ、何を求められたか(できるだけそのままの言葉で)","こちらの対応と結果",`ほかにその場にいた${st}や第三者`];
+  if(s.camera) rec.push("防犯カメラ映像の保存(上書きされる前に該当時間帯を保存する)");
+  ul(rec);
+  if(s.phone) p("電話については、日時・相手の名前・電話番号・話した内容をメモします。録音する場合は「サービス向上のため録音しています」と伝えます。");
+
+  h(`10. 被害を受けた${st}へのフォロー`);
+  ul([`対応後は、その${st}をいったん現場から外し、休憩をとらせる。`,
+      "責任者が話を聞き、「あなたの対応は間違っていない」と伝える。",
+      "必要に応じて、シフトや担当の変更を行う。",
+      `不調が続く場合は、${s.desk}に相談できることを伝え、必要なら医療機関などの専門窓口を案内する。`,
+      "相談したことや被害を受けたことを理由に、評価を下げたり不利益に扱ったりしない。相談の内容は、本人の同意なく広めない。"]);
+
+  h("11. 周知と研修");
+  ul([`このマニュアルは、入職時と年1回以上、全${st}に説明する。パート・アルバイトも含める。`,
+      `休憩室など、${st}がいつでも見られる場所に置く。`,
+      "「レベル」の判断と、責任者の呼び方(合図やひとこと)を、朝礼やミーティングで確認する。",
+      "場面別の言い方の例を使って、ロールプレイをする。"]);
+
+  h("12. 見直し");
+  p(`このマニュアルは、年1回、または大きな事案があったときに見直します。見直しは${s.manager}と${s.desk}が中心となって行い、現場の${st}の意見も取り入れます。`);
+
+  h("付録1 対応記録シート");
+  tbl(["項目","記入欄"],[["日時","　年　月　日(　)　時　分 〜　時　分"],["場所",`${v.place}(　　)/受付・レジ/電話/メール/訪問先/その他`],["対応者",""],["レベル","2 ・ 3 ・ 4"],["相手の特徴",""],["言動・要求の内容",""],["こちらの対応",""],["結果","解決/打ち切り/退去/警察通報/継続"],["同席者・目撃者",""],s.camera?["カメラ映像","保存済み/未保存"]:["証拠","写真・メモ・録音など"],["報告先・日時",""]]);
+
+  h(`付録2 相談窓口のご案内(${st}向け掲示)`);
+  box("掲示文",`${v.cust}からの迷惑行為で困ったとき、つらいと感じたときは、一人で抱えずに相談してください。\n現場の責任者:${s.manager}(不在時:${s.deputy})\n相談窓口:${s.desk}${ext?`\n外部の相談先:${ext}`:""}\n相談したことで不利益に扱われることはありません。相談の内容は、本人の同意なく広めません。`);
+
+  B.push({t:"note",text:"このマニュアルは、入力内容をもとに作成したひな形です。実際の運用にあたっては、厚生労働省の指針・マニュアルもあわせて確認してください。就業規則の変更や個別の法的判断が必要な場合は、社会保険労務士・弁護士にご相談ください。"});
+  return B;
+}
+
+/* ---------- 業種の切り替え ---------- */
+function isAvail(ind,k){ return k in (IND[ind]||IND.food).feats; }
+function renderFeats(ind, keep){
+  const v=IND[ind];
+  $("feats").innerHTML = Object.keys(v.feats).map(k=>{
+    const on = keep && k in keep ? keep[k] : !!v.feats[k];
+    const label = k==="night" ? v.night : FEAT_LABEL[k];
+    return `<label class="chk"><input type="checkbox" id="${k}"${on?" checked":""}>${label}</label>`;
+  }).join("");
+  $("shopLabel").textContent=v.shopLabel;
+}
+let prevInd="food";
+function switchIndustry(){
+  const ind=$("industry").value, old=IND[prevInd], v=IND[ind];
+  [["shop","shop"],["company","company"],["manager","mgr"],["deputy","dep"]].forEach(([id,key])=>{
+    const el=$(id); if(!el.value.trim() || el.value.trim()===old[key]) el.value=v[key];
+  });
+  renderFeats(ind); prevInd=ind; render();
+}
+
+/* ---------- プレビュー ---------- */
+const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const br = t => esc(t).replace(/\n/g,"<br>");
+function toHTML(B){
+  let html="", toc=[], n=0;
+  for(const b of B){
+    switch(b.t){
+      case "title": html+=`<p class="dtitle">${esc(b.text)}</p>`;break;
+      case "sub": html+=`<p class="dsub">${esc(b.text)}</p>`;break;
+      case "meta": html+=`<p class="dmeta">${esc(b.text)}</p>`;break;
+      case "h2": n++; html+=`<h2 id="s${n}">${esc(b.text)}</h2>`; toc.push(`<a href="#s${n}">${esc(b.text.replace(/^\d+\.\s*/,""))}</a>`);break;
+      case "h3": html+=`<h3>${esc(b.text)}</h3>`;break;
+      case "scene": html+=`<h3><span class="tag ${b.lv}">${b.lvName}</span>${esc(b.text)}</h3>`;break;
+      case "p": html+=`<p>${esc(b.text)}</p>`;break;
+      case "ul": html+=`<ul>${b.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`;break;
+      case "ol": html+=`<ol>${b.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`;break;
+      case "box": html+=`<div class="box"><div class="bl">${esc(b.label)}</div><p>${br(b.text)}</p></div>`;break;
+      case "table": {
+        const rows=b.rows.map((r,i)=>`<tr class="${b.cls==="lv"?"l"+(i+1):""}">${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("");
+        html+=`<div class="tbl"><table class="${b.cls||""}"><thead><tr>${b.head.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;break;}
+      case "note": html+=`<p class="note">${esc(b.text)}</p>`;break;
+    }
+  }
+  return {html,toc:toc.join("")};
+}
+
+/* ---------- テキスト ---------- */
+function toText(B){
+  const out=[];
+  for(const b of B){
+    if(b.t==="h2") out.push("\n■ "+b.text);
+    else if(b.t==="h3") out.push("\n◆ "+b.text);
+    else if(b.t==="scene") out.push(`\n◆ [${b.lvName}] ${b.text}`);
+    else if(b.t==="ul") b.items.forEach(i=>out.push("・"+i));
+    else if(b.t==="ol") b.items.forEach((i,k)=>out.push(`${k+1}. ${i}`));
+    else if(b.t==="box") out.push(`【${b.label}】\n${b.text}`);
+    else if(b.t==="table"){out.push(b.head.join(" | ")); b.rows.forEach(r=>out.push(r.join(" | ")));}
+    else out.push(b.text);
+  }
+  return out.join("\n").trim()+"\n";
+}
+
+/* ---------- Word ---------- */
+function toDocx(B){
+  const D=window.docx, FONT="Yu Gothic";
+  const run=(text,o={})=>new D.TextRun({text,font:FONT,...o});
+  const multi=(text,o={})=>text.split("\n").map((line,i)=>new D.TextRun({text:line,font:FONT,break:i?1:0,...o}));
+  const cell=(text,head,shade)=>new D.TableCell({children:[new D.Paragraph({children:[run(text,{bold:!!head,size:19})]})],
+      shading:head?{fill:"E3EBF2"}:shade?{fill:shade}:undefined,margins:{top:60,bottom:60,left:100,right:100}});
+  const lvFill=["E5F1EA","F7EED9","F8E6DB","F7DEDC"];
+  const kids=[];
+  for(const b of B){
+    switch(b.t){
+      case "title": kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:120},children:[run(b.text,{bold:true,size:36})]}));break;
+      case "sub": kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[run(b.text,{size:24})]}));break;
+      case "meta": kids.push(new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:400},children:[run(b.text,{size:18,color:"5D6B70"})]}));break;
+      case "h2": kids.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1,spacing:{before:360,after:120},border:{bottom:{style:D.BorderStyle.SINGLE,size:8,color:"1B2629",space:4}},children:[run(b.text,{bold:true,size:28,color:"1B2629"})]}));break;
+      case "h3": kids.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_2,spacing:{before:240,after:80},children:[run(b.text,{bold:true,size:23,color:"1B2629"})]}));break;
+      case "scene": kids.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_2,spacing:{before:240,after:80},children:[run(`[${b.lvName}] `,{bold:true,size:21,color:"C0612B"}),run(b.text,{bold:true,size:23,color:"1B2629"})]}));break;
+      case "p": kids.push(new D.Paragraph({spacing:{after:120},children:[run(b.text,{size:21})]}));break;
+      case "ul": b.items.forEach(i=>kids.push(new D.Paragraph({indent:{left:360,hanging:240},spacing:{after:60},children:[run("・"+i,{size:21})]})));break;
+      case "ol": b.items.forEach((i,k)=>kids.push(new D.Paragraph({indent:{left:360,hanging:280},spacing:{after:60},children:[run(`${k+1}. ${i}`,{size:21})]})));break;
+      case "box": kids.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({children:[new D.TableCell({shading:{fill:"F2F4F5"},margins:{top:120,bottom:120,left:160,right:160},children:[
+          new D.Paragraph({children:[run(b.label,{bold:true,size:18,color:"2D4F6C"})]}),new D.Paragraph({children:multi(b.text,{size:21})})]})]})]}));
+        kids.push(new D.Paragraph({children:[]}));break;
+      case "table": kids.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[
+          new D.TableRow({tableHeader:true,children:b.head.map(c=>cell(c,true))}),
+          ...b.rows.map((r,i)=>new D.TableRow({children:r.map((c,j)=>cell(c||" ",false,b.cls==="lv"&&j===0?lvFill[i]:null))}))]}));
+        kids.push(new D.Paragraph({children:[]}));break;
+      case "note": kids.push(new D.Paragraph({spacing:{before:400},children:[run(b.text,{size:17,color:"5D6B70"})]}));break;
+    }
+  }
+  return new D.Document({styles:{default:{document:{run:{font:FONT,size:21}}}},sections:[{properties:{page:{margin:{top:1134,bottom:1134,left:1134,right:1134}}},children:kids}]});
+}
+
+/* ---------- 画面の更新 ---------- */
+let current=[];
+function render(){
+  const s=read(); current=build(s);
+  const {html,toc}=toHTML(current);
+  $("doc").innerHTML=html; $("toc").innerHTML=toc;
+  try{localStorage.setItem("kasuhara-form",JSON.stringify(s));}catch(e){}
+}
+function restore(){
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem("kasuhara-form")||"null"); }catch(e){}
+  const ind = saved && IND[saved.industry] ? saved.industry : "food";
+  $("industry").value=ind; prevInd=ind;
+  renderFeats(ind, saved||null);
+  if(!saved) return;
+  FIELDS.forEach(k=>{const el=$(k); if(!el||!(k in saved)||k==="industry") return; if(el.type!=="checkbox") el.value=saved[k];});
+}
+const say=t=>{$("status").textContent=t;};
+$("f").addEventListener("input",render);
+$("f").addEventListener("submit",e=>e.preventDefault());
+$("industry").addEventListener("change",switchIndustry);
+
+$("copyBtn").addEventListener("click",()=>{
+  const text=toText(current);
+  navigator.clipboard.writeText(text).then(()=>say("マニュアルの全文をコピーしました。"),()=>{
+    const r=document.createRange(); r.selectNodeContents($("doc")); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    say("自動でコピーできなかったため、本文を選択しました。コピー操作でお使いください。");
+  });
+});
+
+/* ---------- Googleドキュメント用(書式つきHTML) ---------- */
+function toClipHTML(B){
+  const F='font-family:Arial,sans-serif;';
+  const td='border:1px solid #999;padding:4px 8px;vertical-align:top;font-size:10.5pt;';
+  const lvBg=["#E5F1EA","#F7EED9","#F8E6DB","#F7DEDC"];
+  let o=`<div style="${F}">`;
+  for(const b of B){
+    switch(b.t){
+      case "title": o+=`<h1 style="text-align:center">${esc(b.text)}</h1>`;break;
+      case "sub": o+=`<p style="text-align:center;font-size:13pt">${esc(b.text)}</p>`;break;
+      case "meta": o+=`<p style="text-align:center;color:#666;font-size:9pt">${esc(b.text)}</p>`;break;
+      case "h2": o+=`<h2>${esc(b.text)}</h2>`;break;
+      case "h3": o+=`<h3>${esc(b.text)}</h3>`;break;
+      case "scene": o+=`<h3><span style="color:#C0612B">[${esc(b.lvName)}]</span> ${esc(b.text)}</h3>`;break;
+      case "p": o+=`<p>${esc(b.text)}</p>`;break;
+      case "ul": o+=`<ul>${b.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`;break;
+      case "ol": o+=`<ol>${b.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`;break;
+      case "box": o+=`<table style="border-collapse:collapse;width:100%"><tr><td style="${td}background:#F2F4F5;padding:8px 12px"><b style="color:#2D4F6C;font-size:9pt">${esc(b.label)}</b><br>${br(b.text)}</td></tr></table><p></p>`;break;
+      case "table": o+=`<table style="border-collapse:collapse;width:100%"><tr>${b.head.map(c=>`<th style="${td}background:#E3EBF2;text-align:left">${esc(c)}</th>`).join("")}</tr>${b.rows.map((r,i)=>`<tr>${r.map((c,j)=>`<td style="${td}${b.cls==="lv"&&j===0?`background:${lvBg[i]};font-weight:bold;`:""}">${esc(c)||"&nbsp;"}</td>`).join("")}</tr>`).join("")}</table><p></p>`;break;
+      case "note": o+=`<p style="color:#666;font-size:9pt">${esc(b.text)}</p>`;break;
+    }
+  }
+  return o+"</div>";
+}
+$("gdocBtn").addEventListener("click",async()=>{
+  const html=toClipHTML(current), text=toText(current);
+  let ok=false;
+  try{
+    if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+      await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})})]);
+      ok=true;
+    }
+  }catch(e){}
+  if(!ok){
+    try{
+      const tmp=document.createElement("div"); tmp.innerHTML=html; tmp.style.cssText="position:fixed;left:-9999px;top:0;";
+      document.body.appendChild(tmp);
+      const r=document.createRange(); r.selectNodeContents(tmp); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      ok=document.execCommand("copy"); sel.removeAllRanges(); tmp.remove();
+    }catch(e){ ok=false; }
+  }
+  if(ok){ $("gdocHelp").hidden=false; say(""); }
+  else { $("gdocHelp").hidden=true; say("この画面では書式つきのコピーができませんでした。「Wordで保存」したファイルをGoogleドライブにアップロードして開いてください。"); }
+});
+
+/* ---------- Word保存(通常のダウンロード) ---------- */
+if(window.docx) $("docxBtn").hidden=false;
+$("docxBtn").addEventListener("click",async()=>{
+  try{
+    say("Wordファイルを作成しています…");
+    const blob=await window.docx.Packer.toBlob(toDocx(current));
+    const name=`カスハラ対応マニュアル_${read().shop.replace(/[\\/:*?"<>|\s]+/g,"")}.docx`;
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    say("Wordファイルを保存しました。");
+  }catch(e){
+    say("Wordファイルを作成できませんでした。「テキストをコピー」をお使いください。");
+  }
+});
+
+restore(); render();
+</script>
+
+</body>
+</html>
